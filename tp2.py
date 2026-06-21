@@ -118,4 +118,71 @@ else:
 # Hamming simple (sans 8ème bit) est incapable de corriger ou détecter 2 erreures.
 # Pour détecter une deuxième erreur on doit ajouter un bit de parité global
 
+#################################################
 # Partie 4 - Passage au code de Hamming étendu
+#################################################
+
+
+def build_modified_hamming_code(msg:str)->tuple:
+    if len(msg) != 4:
+        raise ValueError("Le message doit être de 4 bits")
+
+    d1 = int(msg[0])
+    d2 = int(msg[1])
+    d3 = int(msg[2])
+    d4 = int(msg[3])
+
+    p1 = d1^d2^d4
+    p2 = d1^d3^d4
+    p3 = d2^d3^d4
+
+    g = p1^ p2^ d1^ p3^ d2^ d3^ d4
+
+    return (p1, p2, d1, p3, d2, d3, d4, g)
+
+code_hamming_modified = build_modified_hamming_code(data)
+print(f"modified hamming code:\n{code_hamming_modified}")
+
+def is_global_parity_valid(code:tuple)->bool:
+    return sum(code) % 2 == 0 # checking parity bit is equivalent to checking if sum is even
+
+if is_global_parity_valid(code_hamming_modified) == True:
+    print("Global Parity Valid")
+else:
+    print("Global Parity Invalid")
+
+# le mot code obtenu sur 8 bits est 01100110
+# le bit suplémentaire permet de détecter une deuxième erreur
+
+#################################################
+# Partie 5 - Passage au code de Hamming étendu
+#################################################
+
+
+simple_err_modified_harming = introduce_error(code_hamming_modified, 6)
+print(f'error modified hamming: {simple_err_modified_harming}')
+
+rx_message = np.asarray(simple_err_modified_harming)
+hamming_part = rx_message[:7] # grab only first 7 bits
+syndr_mod_haming = calc_syndrome(H_LUT, hamming_part)
+print(f'syndrome first 7 bits modified hamming: {syndr_mod_haming}')
+if is_global_parity_valid(simple_err_modified_harming) == True:
+    print("Global Parity Valid")
+else:
+    print("Global Parity Invalid")
+
+# on vérifie si le syndrome est non nul dabord
+# si c'est le cas, on vérifie la parité globale pour savoir si il y a une ou deux erreurs.
+# si la parité n'est pas valide alors le nombre d'erreurs est paire (on suppose une erreur uniquement)
+# on corrige comme d'habitude avec le LUT
+# sinon il y a un nombre d'erreur paire (on suppose 2) on peut pas la corriger
+
+# Si une erreur seulement elle est localisable.
+# oui si il y a uniquement une erreur
+# Si l'erreur affecte uniquement le bit de parité global on pourra le déduire du fait que le syndrome sera nul.
+
+
+#########################################################
+# Partie 6 - Étude d'une double erreur avec le code (8,4)
+#########################################################
+
