@@ -1,6 +1,8 @@
 # TP2 Correction d'erreurs avec le code de Hamming (7,4) et (8,4)
 
+#################################################
 # Partie 1 - Codage de Hamming (7,4)
+#################################################
 # 4 bits info, auquels sont ajoutés 3 bits de parité pour former un mot codé de 7 bits.
 
 data = "1011" # d3,d2,d1,d0
@@ -28,7 +30,9 @@ print(f"original code:\n{code}")
 # Ces bits jouent le rôle de SEC (Single Error Correction), DED (Double Error Detection)
 # On ajoute de la redondance pour protéger contre les erreurs de transmission
 
+#################################################
 # Partie 2 - Correction d'une erreur simple
+#################################################
 from os import error
 import numpy as np
 
@@ -56,18 +60,16 @@ H_LUT = np.array([
             [1,0,1,0,1,0,1],
             ])
 
-
-
 def calc_syndrome(H:np.ndarray, rx_msg:np.ndarray)->np.ndarray:
     return np.dot(H,rx_msg)%2
 
-code_with_error = introduce_error(code, 5)
 syndrome = calc_syndrome(H_LUT, np.asarray(code_with_error))
 
 print(f"syndrome: {syndrome}")
 
-# Le mot reçu après l'erreur est 0010101
-# Le syndrome optenu est 101 donc bit position 5
+
+# Le mot reçu après l'erreur est 0110001
+# Le syndrome optenu est 110 donc bit position 6
 
 # Pour déduire la position de l'erreur on utilise un tableau LUT (Look-up table)
 # Puisque H est ordonée on obtient directement la position de l'erreur en binaire
@@ -82,8 +84,38 @@ def get_error_position(synd:np.ndarray)->int:
 err_pos = get_error_position(syndrome)
 print(f"Error found at position {err_pos}")
 
+fixed_code_1_err = introduce_error(code_with_error, err_pos)
+if(fixed_code_1_err == code):
+    print('Code corrected successfully!')
+else:
+    print('Code could not be corrected')
+
 # Le mot corrigé est forcément iddentique au mot codé initial si uniquement une erreur
 # a été injectée.
 
+#################################################
 # Partie 3 - Les Limites du code de Hamming (7,4)
+#################################################
+code_with_error = introduce_error(code_with_error, 3)
+print("Code avec erreures sur bits 3 et 6:")
+print(code_with_error)
 
+syndrome_2_errors = calc_syndrome(H_LUT, np.asarray(code_with_error))
+print(f'syndrome avec erreurs injectées sur bits 3 et 6: {syndrome_2_errors}')
+err_pos2 = get_error_position(syndrome_2_errors)
+print(f"Error found at position {err_pos2}")
+fixed_code_2_err = introduce_error(code_with_error, err_pos2)
+print(calc_syndrome(H_LUT, np.asarray(fixed_code_2_err))) # syndrome indique que le code parait maintenant corrigé
+if(fixed_code_2_err == code):
+    print('Code corrected successfully!')
+else:
+    print('Code could not be corrected')
+# Non le résultat n'est pas correct
+# La correction n'est pas appliquée correctement, et la détection du bit erroné sera mauvaise
+# Le code Hamming simple est basé sur la notion de parité.
+# Une correction basée sur la simple détection va permettre de satisfaire le calcule du syndrome
+# Du point de vue du récepteur le code est maintenant corrigé sauf que ce n'est pas le cas
+# Hamming simple (sans 8ème bit) est incapable de corriger ou détecter 2 erreures.
+# Pour détecter une deuxième erreur on doit ajouter un bit de parité global
+
+# Partie 4 - Passage au code de Hamming étendu
