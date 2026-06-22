@@ -21,7 +21,7 @@
 \begin{enumerate}
 \item Quel est le mot codé obtenu ?
 
-le mot clé optenu est 1010101
+le mot clé obtenu est 1010101
 \item Quel est le rôle des bits de parité ?
 
 Le rôle des bits de parité est de détecter la présence d'erreur et de la localiser à l'aide de 'coordonnées'.
@@ -33,20 +33,20 @@ On ajoute de la redondance pour protéger contre les erreurs de transmission
 \end{enumerate}
 \section{Partie 2 - Correction d'une erreur simple}
 \begin{enumerate}
-\item Quel est le mot reçu après l’erreur ? 
+\item Quel est le mot reçu après l'erreur ? 
 
 Le mot reçu après l'erreur est 0110001
 \item Quel syndrome obtenez-vous ? 
 
-Le syndrome optenu est 110 donc bit position 6
+Le syndrome obtenu est 110 donc bit position 6
 \item Comment déduisez-vous la position de l’erreur ? 
 
 Pour déduire la position de l'erreur on utilise un tableau LUT (Look-up table)
-Puisque H est ordonée on obtient directement la position de l'erreur en binaire
-sur le vecteur colone correspondant en binaire
+Puisque H est ordonnée on obtient directement la position de l'erreur en binaire
+sur le vecteur colonne correspondant en binaire
 \item Le mot corrigé est-il identique au mot codé initial ? 
 
-Le mot corrigé est forcément iddentique au mot codé initial si uniquement une erreur
+Le mot corrigé est forcément identique au mot codé initial si uniquement une erreur
 a été injectée.
 \end{enumerate}
 \section{Partie 3 - Les Limites du code de Hamming (7,4)}
@@ -65,7 +65,7 @@ Du point de vue du récepteur le code est maintenant corrigé sauf que ce n'est 
 
 \item Que peut-on dire de ses capacités de détection et de correction ? 
 
-Hamming simple (sans 8ème bit) est incapable de corriger ou détecter 2 erreures.
+Hamming simple (sans 8ème bit) est incapable de corriger ou détecter 2 erreurs.
 Pour détecter une deuxième erreur on doit ajouter un bit de parité global
 \end{enumerate}
 
@@ -73,25 +73,25 @@ Pour détecter une deuxième erreur on doit ajouter un bit de parité global
 \begin{enumerate}
 \item Quel est le mot codé obtenu sur 8 bits ? 
 
-le mot code obtenu sur 8 bits est 01100110
+Le mot code obtenu sur 8 bits est 01100110
 \item Quel est le rôle du bit supplémentaire ? 
 
-le bit suplémentaire permet de détecter une deuxième erreur
+Le bit supplémentaire permet de détecter une deuxième erreur
 \item Que gagne-t-on par rapport au code (7,4) ? 
 
-le bit suplémentaire permet de détecter une deuxième erreur
+Le bit supplémentaire permet de détecter une deuxième erreur
 \end{enumerate}
 
 \section{Partie 5 - Passage au code de Hamming étendu}
 
 \begin{enumerate}
-\item L’erreur est-elle localisable ? 
+\item L'erreur est-elle localisable ? 
 
 Si une erreur seulement elle est localisable.
 \item Peut-on la corriger ? 
 
 Oui si il y a uniquement une erreur
-\item Que se passe-t-il si l’erreur affecte uniquement le bit de parité global ? 
+\item Que se passe-t-il si l'erreur affecte uniquement le bit de parité global ? 
 
 Si l'erreur affecte uniquement le bit de parité global on pourra le déduire du fait que le syndrome sera nul.
 \end{enumerate}
@@ -102,7 +102,7 @@ Si l'erreur affecte uniquement le bit de parité global on pourra le déduire du
 \item Peut-on encore corriger le mot reçu ? 
 
 On ne peut pas corriger le mot reçu
-\item Peut-on au moins détecter qu’il y a un problème ? 
+\item Peut-on au moins détecter qu'il y a un problème ? 
 
 Oui le problème est détecté
 \item En quoi le code (8,4) est-il plus informatif que le code (7,4) dans ce cas ? 
@@ -110,15 +110,15 @@ Oui le problème est détecté
 On détecte une erreur de plus par rapport à hamming 7,4
 \end{enumerate}
 
-\section{Partie 7 - Étude automatisée sur plusieures messages}
+\section{Partie 7 - Étude automatisée sur plusieurs messages}
 \begin{enumerate}
 \item Dans le cas d’une erreur simple, que constatez-vous pour le code (7,4) ? 
 
 Dans le cas d'une erreur simple je constate qu'elles sont toutes corrigés pour le hamming non étendu (7,4)
 \item Dans le cas de deux erreurs, que constatez-vous pour le code (7,4) ? 
 
-Pour deux erreures elles sont faussement corrigées
-\item Que change l’ajout du bit de parité global dans le code (8,4) ? 
+Pour deux erreurs elles sont faussement corrigées
+\item Que change l'ajout du bit de parité global dans le code (8,4) ? 
 
 L'ajout du bit global permet de détecter la présence d'une deuxième erreur et donc de ne pas corriger un bit à tort
 Le code (8, 4), c-a-d hamming étendu
@@ -143,16 +143,16 @@ Protection minimale pour détecter la présence d'une et une seule erreur. On pe
 Est utilisé dans l'UART aussi
 Dans le cas d'une détection d'erreur, le récepteur peut demander à retransmettre
 
-Le CRC est beacoup plus fort comme solution pour détecter les erreurs. Elle marche aussi pour les multiples erreurs
+Le CRC est beaucoup plus fort comme solution pour détecter les erreurs. Elle marche aussi pour les multiples erreurs
 Le CRC peut aussi être calculé pour un dividende de taille infinie en théorie (même si la probabilité
 de collision augmente avec la taille de ce dividende)
-Les polynomes peuvent être choisis suivant l'application donée
+Les polynômes peuvent être choisis suivant l'application donnée
 Le CRC néanmoins ne permet pas de corriger
 
-Hamming contrairement au CRC permet non seulement de detecter une erreur mais de la corriger
+Hamming contrairement au CRC permet non seulement de détecter une erreur mais de la corriger
 par contre il peut uniquement détecter et corriger une erreur simple
 
-Hamming étendu peut détecter et corriger une erreur d'un bit mais il peut aussi détecter 2 erreures
+Hamming étendu peut détecter et corriger une erreur d'un bit mais il peut aussi détecter 2 erreurs
 \item Quelle solution permet uniquement de détecter ? 
 
 Le CRC, le bit de parité peuvent que détecter
@@ -161,14 +161,14 @@ Le CRC, le bit de parité peuvent que détecter
 Hamming étendu peut uniquement corriger une erreur simple
 \item Quelle solution permet de mieux discriminer le cas de deux erreurs ? 
 
-Hamming étendu permet de discriminer le cas de deux erreures
+Hamming étendu permet de discriminer le cas de deux erreurs
 \item Pourquoi le CRC reste-t-il utile même s’il ne corrige pas ? 
 
-Le CRC reste utile puisqu'il est facile à implémenter en hardware et très flexible en terme de polynome
+Le CRC reste utile puisqu'il est facile à implémenter en hardware et très flexible en terme de polynôme
 et aussi en terme de données d'entrée.
 \item Dans quels cas préférerait-on un code plus puissant (par exemple BCH ou Reed–Solomon) ?
 
-On préférerait un code plus puissant dans le cas où l'on trouve souvent 2+ erreurs ou que la perte de données est innacceptable.
+On préférerait un code plus puissant dans le cas où l'on trouve souvent 2+ erreurs ou que la perte de données est inacceptable.
 \end{enumerate}
 
 \section{Partie 9 - Choix ingénieur}
@@ -182,39 +182,39 @@ On préférerait un code plus puissant dans le cas où l'on trouve souvent 2+ er
 		\end{itemize}
 
 
-La liaison satélitaire peut être sensible à énormément de bruit, le signal de celui-ci sera aussi bien faible
+La liaison satellitaire peut être sensible à énormément de bruit, le signal de celui-ci sera aussi bien faible
 en puissance une fois arrivé au récepteur
 Un choix de FEC semble intéressant ici pour économiser de la puissance et limiter des 
 retransmissions à longue distance inutiles
 Le choix de schéma FEC dépend du type d'application et de la redondance nécessaire
-Si la modulation est adapée hamming pourrait peut-être sufire? Sinon on choisira un autre code plus puissant
+Si la modulation est adaptée, hamming pourrait peut-être suffire? Sinon on choisira un autre code plus puissant
 
 La liaison CAN utilise un CRC en pratique.
-Ce polynome est concû pour être robuste contre le bruit typique présent dans les voitures.
-Le raisonement derrière semble être une priorisation de sécurité avant la vitesse.
-On préfère alouer tous les bits vers une détection plûtot qu'une correction
+Ce polynôme est conçu pour être robuste contre le bruit typique présent dans les voitures.
+Le raisonnement derrière semble être une priorisation de sécurité avant la vitesse.
+On préfère allouer tous les bits vers une détection plutôt qu'une correction
 On pourrait pas du tout imaginer hamming par exemple dans utiliser un code hamming.
-Celui-ci n'est pas du tout suffissament robuste
+Celui-ci n'est pas du tout suffisamment robuste
 
 Pour le stockage SSD, BCH semble être souvent utilisé. C'est une forme de FEC.
 FEC devrait être priorisé puisque l'on peut pas du tout ce permettre de perdre des données dans ce cas.
 Rien ne sert de savoir qu'une erreur est produite si on ne peut pas la corriger
 \item Quel type d’erreurs est probable dans chaque cas ? 
 
-	La liaison satéliltaire est sensible à du bit flipping (erreur simple bit).
-	CAN et le stockage SSD sont sensibles à des erreures de bits multiples.
+	La liaison satellitaire est sensible à du \textit{bit flipping} (erreur simple bit).
+	CAN et le stockage SSD sont sensibles à des erreurs de bits multiples.
 	Le CAN puisqu'il y a du bruit qui pourrait porter sur une durée supérieure au débit.
-	C'est un bruit particulier don't les sources sont connues (bougie voiture, moteurs fenêtre).
-	Les SSD ont des erreurs de plusieurs bits sur un secteur après usure. L'information à moins tendence à rester.
+	C'est un bruit particulier dont les sources sont connues (bougie voiture, moteurs fenêtre).
+	Les SSD ont des erreurs de plusieurs bits sur un secteur après usure. L'information à moins tendance à rester.
 \item Quelle contrainte système est importante (latence, robustesse, complexité, débit, énergie) ?
 
-	La SSD est fortement impacté par la latence. Le CAN a besoin de robustesse, on néglige à la fois la latence et l'impact de la retransmission sur le débit. Sur les satélites ça dépend mais la robustesse et la latence est importante. L'énergie l'est aussi donc on va avoir tendence à minimiser le nombre de transmission depuis les satélites et donc assurer la redondance sur le premier coup.
+	La SSD est fortement impacté par la latence. Le CAN a besoin de robustesse, on néglige à la fois la latence et l'impact de la retransmission sur le débit. Sur les satellites ça dépend mais la robustesse et la latence est importante. L'énergie l'est aussi donc on va avoir tendance à minimiser le nombre de transmission depuis les satellites et donc assurer la redondance sur le premier coup.
 
 \item Quelle solution semble la plus adaptée ?
 
 	Voir question 1)
 \item Le code de Hamming suffit-il dans tous les cas ? Justifier. 
 
-Hamming pourrait peut-être suffire en satélitaire (à voire).
+Hamming pourrait peut-être suffire en satellitaire (à voire).
 \end{enumerate}
 \end{document}
