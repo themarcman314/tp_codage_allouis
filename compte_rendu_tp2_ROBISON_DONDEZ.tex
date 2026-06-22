@@ -1,0 +1,220 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[autolanguage]{numprint}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	urlcolor=blue,
+	pdfpagemode=UseOutlines, % show toc view in pdf reader by default
+}
+\begin{document}
+
+\title{TP2 Correction d'erreurs avec le code de Hamming (7,4) et (8,4)}
+\author{Raphael Dondez \and Marc Robison}
+\maketitle
+
+\section{Partie 1 - Codage de Hamming (7,4)}
+\begin{enumerate}
+\item Quel est le mot codé obtenu ?
+
+le mot clé optenu est 1010101
+\item Quel est le rôle des bits de parité ?
+
+Le rôle des bits de parité est de détecter la présence d'erreur et de la localiser à l'aide de 'coordonnées'.
+Ces bits jouent le rôle de SEC (Single Error Correction), DED (Double Error Detection)
+
+\item Pourquoi ajoute-t-on de la redondance ?
+
+On ajoute de la redondance pour protéger contre les erreurs de transmission
+\end{enumerate}
+\section{Partie 2 - Correction d'une erreur simple}
+\begin{enumerate}
+\item Quel est le mot reçu après l’erreur ? 
+
+Le mot reçu après l'erreur est 0110001
+\item Quel syndrome obtenez-vous ? 
+
+Le syndrome optenu est 110 donc bit position 6
+\item Comment déduisez-vous la position de l’erreur ? 
+
+Pour déduire la position de l'erreur on utilise un tableau LUT (Look-up table)
+Puisque H est ordonée on obtient directement la position de l'erreur en binaire
+sur le vecteur colone correspondant en binaire
+\item Le mot corrigé est-il identique au mot codé initial ? 
+
+Le mot corrigé est forcément iddentique au mot codé initial si uniquement une erreur
+a été injectée.
+\end{enumerate}
+\section{Partie 3 - Les Limites du code de Hamming (7,4)}
+\begin{enumerate}
+\item Le résultat est-il correct ? 
+
+Non le résultat n'est pas correct
+\item Que constatez-vous en présence de deux erreurs ? 
+
+La correction n'est pas appliquée correctement, et la détection du bit erroné sera mauvaise
+\item Pourquoi le code de Hamming (7,4) est-il limité dans ce cas ? 
+
+Le code Hamming simple est basé sur la notion de parité.
+Une correction basée sur la simple détection va permettre de satisfaire le calcule du syndrome
+Du point de vue du récepteur le code est maintenant corrigé sauf que ce n'est pas le cas
+
+\item Que peut-on dire de ses capacités de détection et de correction ? 
+
+Hamming simple (sans 8ème bit) est incapable de corriger ou détecter 2 erreures.
+Pour détecter une deuxième erreur on doit ajouter un bit de parité global
+\end{enumerate}
+
+\section{Partie 4 - Passage au code de Hamming étendu}
+\begin{enumerate}
+\item Quel est le mot codé obtenu sur 8 bits ? 
+
+le mot code obtenu sur 8 bits est 01100110
+\item Quel est le rôle du bit supplémentaire ? 
+
+le bit suplémentaire permet de détecter une deuxième erreur
+\item Que gagne-t-on par rapport au code (7,4) ? 
+
+le bit suplémentaire permet de détecter une deuxième erreur
+\end{enumerate}
+
+\section{Partie 5 - Passage au code de Hamming étendu}
+
+\begin{enumerate}
+\item L’erreur est-elle localisable ? 
+
+Si une erreur seulement elle est localisable.
+\item Peut-on la corriger ? 
+
+Oui si il y a uniquement une erreur
+\item Que se passe-t-il si l’erreur affecte uniquement le bit de parité global ? 
+
+Si l'erreur affecte uniquement le bit de parité global on pourra le déduire du fait que le syndrome sera nul.
+\end{enumerate}
+
+\section{Partie 6 - Étude d'une double erreur avec le code (8,4)}
+
+\begin{enumerate}
+\item Peut-on encore corriger le mot reçu ? 
+
+On ne peut pas corriger le mot reçu
+\item Peut-on au moins détecter qu’il y a un problème ? 
+
+Oui le problème est détecté
+\item En quoi le code (8,4) est-il plus informatif que le code (7,4) dans ce cas ? 
+
+On détecte une erreur de plus par rapport à hamming 7,4
+\end{enumerate}
+
+\section{Partie 7 - Étude automatisée sur plusieures messages}
+\begin{enumerate}
+\item Dans le cas d’une erreur simple, que constatez-vous pour le code (7,4) ? 
+
+Dans le cas d'une erreur simple je constate qu'elles sont toutes corrigés pour le hamming non étendu (7,4)
+\item Dans le cas de deux erreurs, que constatez-vous pour le code (7,4) ? 
+
+Pour deux erreures elles sont faussement corrigées
+\item Que change l’ajout du bit de parité global dans le code (8,4) ? 
+
+L'ajout du bit global permet de détecter la présence d'une deuxième erreur et donc de ne pas corriger un bit à tort
+Le code (8, 4), c-a-d hamming étendu
+\end{enumerate}
+
+\section{Partie 8 - Comparaison avec d'autres solutions}
+\begin{enumerate}
+\item Comparer qualitativement les solutions suivantes:
+
+\begin{itemize}
+\item sans protection
+\item bit de parité
+\item CRC
+\item Hamming (7,4)
+\item Hamming étendu (8,4).
+\end{itemize}
+Sans protection n'apporte rien du tout, est sensible à toutes les erreurs.
+Devrait être utilisé uniquement si les erreurs sont acceptables (ex sortie UART pour débogger)
+
+Avec bit de parité
+Protection minimale pour détecter la présence d'une et une seule erreur. On peut pas faire mieux avec un seul bit.
+Est utilisé dans l'UART aussi
+Dans le cas d'une détection d'erreur, le récepteur peut demander à retransmettre
+
+Le CRC est beacoup plus fort comme solution pour détecter les erreurs. Elle marche aussi pour les multiples erreurs
+Le CRC peut aussi être calculé pour un dividende de taille infinie en théorie (même si la probabilité
+de collision augmente avec la taille de ce dividende)
+Les polynomes peuvent être choisis suivant l'application donée
+Le CRC néanmoins ne permet pas de corriger
+
+Hamming contrairement au CRC permet non seulement de detecter une erreur mais de la corriger
+par contre il peut uniquement détecter et corriger une erreur simple
+
+Hamming étendu peut détecter et corriger une erreur d'un bit mais il peut aussi détecter 2 erreures
+\item Quelle solution permet uniquement de détecter ? 
+
+Le CRC, le bit de parité peuvent que détecter
+\item Quelle solution permet de corriger localement une erreur simple ? 
+
+Hamming étendu peut uniquement corriger une erreur simple
+\item Quelle solution permet de mieux discriminer le cas de deux erreurs ? 
+
+Hamming étendu permet de discriminer le cas de deux erreures
+\item Pourquoi le CRC reste-t-il utile même s’il ne corrige pas ? 
+
+Le CRC reste utile puisqu'il est facile à implémenter en hardware et très flexible en terme de polynome
+et aussi en terme de données d'entrée.
+\item Dans quels cas préférerait-on un code plus puissant (par exemple BCH ou Reed–Solomon) ?
+
+On préférerait un code plus puissant dans le cas où l'on trouve souvent 2+ erreurs ou que la perte de données est innacceptable.
+\end{enumerate}
+
+\section{Partie 9 - Choix ingénieur}
+
+\begin{enumerate}
+	\item Pour chacun des cas suivants, proposer une stratégie de protection adaptée et justifier : 
+		\begin{itemize}
+	\item Cas A : liaison satellite 
+	\item Cas B : CAN bus automobile 
+	\item Cas C : stockage SSD 
+		\end{itemize}
+
+
+La liaison satélitaire peut être sensible à énormément de bruit, le signal de celui-ci sera aussi bien faible
+en puissance une fois arrivé au récepteur
+Un choix de FEC semble intéressant ici pour économiser de la puissance et limiter des 
+retransmissions à longue distance inutiles
+Le choix de schéma FEC dépend du type d'application et de la redondance nécessaire
+Si la modulation est adapée hamming pourrait peut-être sufire? Sinon on choisira un autre code plus puissant
+
+La liaison CAN utilise un CRC en pratique.
+Ce polynome est concû pour être robuste contre le bruit typique présent dans les voitures.
+Le raisonement derrière semble être une priorisation de sécurité avant la vitesse.
+On préfère alouer tous les bits vers une détection plûtot qu'une correction
+On pourrait pas du tout imaginer hamming par exemple dans utiliser un code hamming.
+Celui-ci n'est pas du tout suffissament robuste
+
+Pour le stockage SSD, BCH semble être souvent utilisé. C'est une forme de FEC.
+FEC devrait être priorisé puisque l'on peut pas du tout ce permettre de perdre des données dans ce cas.
+Rien ne sert de savoir qu'une erreur est produite si on ne peut pas la corriger
+\item Quel type d’erreurs est probable dans chaque cas ? 
+
+	La liaison satéliltaire est sensible à du bit flipping (erreur simple bit).
+	CAN et le stockage SSD sont sensibles à des erreures de bits multiples.
+	Le CAN puisqu'il y a du bruit qui pourrait porter sur une durée supérieure au débit.
+	C'est un bruit particulier don't les sources sont connues (bougie voiture, moteurs fenêtre).
+	Les SSD ont des erreurs de plusieurs bits sur un secteur après usure. L'information à moins tendence à rester.
+\item Quelle contrainte système est importante (latence, robustesse, complexité, débit, énergie) ?
+
+	La SSD est fortement impacté par la latence. Le CAN a besoin de robustesse, on néglige à la fois la latence et l'impact de la retransmission sur le débit. Sur les satélites ça dépend mais la robustesse et la latence est importante. L'énergie l'est aussi donc on va avoir tendence à minimiser le nombre de transmission depuis les satélites et donc assurer la redondance sur le premier coup.
+
+\item Quelle solution semble la plus adaptée ?
+
+	Voir question 1)
+\item Le code de Hamming suffit-il dans tous les cas ? Justifier. 
+
+Hamming pourrait peut-être suffire en satélitaire (à voire).
+\end{enumerate}
+\end{document}

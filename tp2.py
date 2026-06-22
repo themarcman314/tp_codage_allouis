@@ -48,6 +48,7 @@ print(
 '''
 )
 
+import sys
 import numpy as np
 
 # 1 indexed
@@ -207,8 +208,7 @@ if is_global_parity_valid(simple_err_modified_harming) == True:
 else:
     print("Global Parity Invalid")
 
-# on vérifie si le syndrome est non nul dabord
-# si c'est le cas, on vérifie la parité globale pour savoir si il y a une ou deux erreurs.
+# on vérifie si le syndrome est non nul dabord si c'est le cas, on vérifie la parité globale pour savoir si il y a une ou deux erreurs.
 # si la parité n'est pas valide alors le nombre d'erreurs est paire (on suppose une erreur uniquement)
 # on corrige comme d'habitude avec le LUT
 # sinon il y a un nombre d'erreur paire (on suppose 2) on peut pas la corriger
@@ -264,7 +264,9 @@ def gen_rand_msg(length:int)->str:
     message = format(message, '0b').zfill(length) # ensure no trucking if first bit is zero
     return message
 
-messages = list(gen_rand_msg(4) for _ in range(1000)) # gen 1000 messages to ensure robustness lol
+
+number_of_messages = 1000
+messages = list(gen_rand_msg(4) for _ in range(number_of_messages)) # gen 1000 messages to ensure robustness lol
 
 # generate codes
 codes = []
@@ -275,56 +277,179 @@ codes_not_extended = []
 for message in messages:
     codes_not_extended.append(build_code(message))
 
-print(codes)
 
-# indroduire 2 erreures par code
-codes_with_errors = []
-for code in codes:
-    err_pos = random.randint(1,len(code))
-    err_pos2 = random.randint(1,len(code))
-    first_error = introduce_error(code, err_pos)
-    codes_with_errors.append(introduce_error(first_error, err_pos2))
+# introduire erreure(s)
+def introduce_error_into_codes_array(codes:list, number_of_errors:int)->list:
+    codes_with_errors = []
+    for code in codes:
+        err_pos = random.randint(1,len(code))
+#        print(err_pos)
+        if number_of_errors == 2:
+            err_pos2 = random.randint(1,len(code))
+            while err_pos2 == err_pos: # make sure the numbers are different to ensure exactly 2 errors introduced
+                err_pos2 = random.randint(1,len(code))
+#            print(err_pos2)
+            code = introduce_error(code, err_pos2) # apply first error
+        codes_with_errors.append(introduce_error(code, err_pos)) # apply either first or second
+    return codes_with_errors
 
-codes_with_errors_not_exteded = []
-for code in codes_not_extended:
-    err_pos = random.randint(1,len(codes_not_extended))
-    err_pos2 = random.randint(1,len(codes_not_extended))
-    first_error = introduce_error(code, err_pos)
-    codes_with_errors_not_exteded.append(introduce_error(first_error, err_pos2))
-print(codes_with_errors)
+#codes_with_errors_not_exteded = []
+#for code in codes_not_extended:
+#    err_pos = random.randint(1,len(code))
+#    err_pos2 = random.randint(1,len(code))
+#    while err_pos2 == err_pos: # make sure the numbers are different to ensure exactly 2 errors introduced
+#        err_pos2 = random.randint(1,len(code))
+#    first_error = introduce_error(code, err_pos)
+#    codes_with_errors_not_exteded.append(introduce_error(first_error, err_pos2))
 
-# calcul_syndrome
-syndromes = []
-for code in codes_with_errors:
-    rx_m = np.asarray(code)
-    syndromes.append(calc_syndrome(H_LUT, rx_m[:7]))
+# errors should be different from call to call despite hardcoded seed
+# seed provides reproducable results though
+codes_with_errors = introduce_error_into_codes_array(codes, 1)
+codes_with_errors_not_extended = introduce_error_into_codes_array(codes_not_extended, 1)
+codes_with_errors2 = introduce_error_into_codes_array(codes, 2)
+codes_with_errors_not_extended2 = introduce_error_into_codes_array(codes_not_extended, 2)
 
-syndromes_not_extended = []
-for code in codes_with_errors:
-    rx_m = np.asarray(codes_not_extended)
-    syndromes_not_extended.append(calc_syndrome(H_LUT, rx_m))
-print(syndromes)
+# calcul_syndromes
+def syndrome_fill(codes_with_errors:list):
+    syndromes = []
+    for code in codes_with_errors:
+        rx_m = np.asarray(code)
+        #print(rx_m[:7])
+        syndromes.append(calc_syndrome(H_LUT, rx_m[:7]))
+    return syndromes
 
-# corriger l'erreur
-# WARNING: assume only one error
-corrected_codes = []
-for i in range(len(codes_with_errors)):
-    #print(i)
-    error_position = get_error_position(syndromes[i])
-    #print(f'error_position : {error_position}')
-    if(error_position != 0):
-        corrected_codes.append(introduce_error(codes_with_errors[i], error_position))
-    else: # global parity must be corrupted
-        corrected_codes.append(introduce_error(codes_with_errors[i], 8))
-#print(corrected_codes)
+syndromes = syndrome_fill(codes_with_errors)
+syndromes2 = syndrome_fill(codes_with_errors2)
+syndromes_not_extended = syndrome_fill(codes_with_errors_not_extended)
+syndromes_not_extended2 = syndrome_fill(codes_with_errors_not_extended2)
 
-if corrected_codes == codes:
-    print('all codes corrected successfully')
-else:
-    print('at least one code failed to correct')
+def correct_codes_list(codes_with_errors, original_codes, syndromes):
+    num_err_detected_and_fixed = 0
+    num_err_detected_but_unfixable = 0
+    num_err_falsely_fixed = 0 # detected with non extended and fixed but different to initial code
+    # corriger l'erreur
+    # WARNING: assume max of two errors
+    corrected_codes = []
+    for i in range(len(codes_with_errors)):
+        extended = False
+        if len(codes_with_errors[0]) == 8:
+            extended = True
+        error_position = get_error_position(syndromes[i])
+        if(error_position == 0): # syndrome is 0
+            if extended:
+                if is_global_parity_valid(codes_with_errors[i]) == False:
+                    corrected_codes.append(introduce_error(codes_with_errors[i], 8)) # correct parity bit
+                    num_err_detected_and_fixed += 1
+        else: # syndrome indicates error
+            if extended:
+                if is_global_parity_valid(codes_with_errors[i]) == False: # only one error found
+                    corrected_codes.append(introduce_error(codes_with_errors[i], error_position))
+                    num_err_detected_and_fixed += 1
+                else:
+                    num_err_detected_but_unfixable += 2
+            else:
+                corrected_codes.append(introduce_error(codes_with_errors[i], error_position))
+                if corrected_codes[-1] != original_codes[i]:
+                    num_err_falsely_fixed += 1
+                else:
+                    num_err_detected_and_fixed += 1
 
-# sans protection on aura forcément toujours une erreur
-# pour hamming(7,4) on aurra 1/8 fois une erreur
-# pour hamming(8,4) on aurra 
+    return {'corrected codes': corrected_codes, 'num_err_detected_and_fixed': num_err_detected_and_fixed, 'num_err_detected_but_unfixable': num_err_detected_but_unfixable, 'num_err_falsely_fixed': num_err_falsely_fixed}
+
+corrected = correct_codes_list(codes_with_errors, codes, syndromes)
+corrected2 = correct_codes_list(codes_with_errors2, codes, syndromes2)
+corrected_not_extended = correct_codes_list(codes_with_errors_not_extended, codes_not_extended, syndromes_not_extended)
+corrected_not_extended2 = correct_codes_list(codes_with_errors_not_extended2, codes_not_extended, syndromes_not_extended2)
+
+def print_stats(corrected:dict):
+    from itertools import islice
+    for key, value in islice(corrected.items(), 1, None):
+        sys.stdout.write('\t')
+        print(f"{key}: {value}")
+
+print('single err:')
+print_stats(corrected)
+print('double err:')
+print_stats(corrected2)
+print('single err not extended:')
+print_stats(corrected_not_extended)
+print('double err not extended:')
+print_stats(corrected_not_extended2)
+
+# Dans le cas d'une erreur simple je constate qu'elles sont toutes corrigés pour le hamming non étendu (7,4)
+# Pour deux erreures elles sont faussement corrigées
+# L'ajout du bit global permet de détecter la présence d'une deuxième erreur et donc de ne pas corriger un bit à tort
+# Le code (8, 4), c-a-d hamming étendu
+
+#################################################
+# Partie 8 - Comparaison avec d'autres solutions
+#################################################
+
+print(
+        '''
+#################################################
+# Partie 8 - Comparaison avec d'autres solutions
+#################################################
+        '''
+        )
+#########################################
+# Comparaison qualitative des solutions
+#########################################
+# Sans protection n'apporte rien du tout, est sensible à toutes les erreurs.
+# Devrait être utilisé uniquement si les erreurs sont acceptables (ex sortie UART pour débogger)
+
+# Avec bit de parité
+# Protection minimale pour détecter la présence d'une et une seule erreur. On peut pas faire mieux avec un seul bit.
+# Est utilisé dans l'UART aussi
+# Dans le cas d'une détection d'erreur, le récepteur peut demander à retransmettre
+
+# Le CRC est beacoup plus fort comme solution pour détecter les erreurs. Elle marche aussi pour les multiples erreurs
+# Le CRC peut aussi être calculé pour un dividende de taille infinie en théorie (même si la probabilité
+# de collision augmente avec la taille de ce dividende)
+# Les polynomes peuvent être choisis suivant l'application donée
+# Le CRC néanmoins ne permet pas de corriger
+
+# Hamming contrairement au CRC permet non seulement de detecter une erreur mais de la corriger
+# par contre il peut uniquement détecter et corriger une erreur simple
+
+# Hamming étendu peut détecter et corriger une erreur d'un bit mais il peut aussi détecter 2 erreures
 
 
+
+# Le CRC, le bit de parité peuvent que détecter
+# Hamming étendu peut uniquement corriger une erreur simple
+# Hamming étendu permet de discriminer le cas de deux erreures
+# Le CRC reste utile puisqu'il est facile à implémenter en hardware et très flexible en terme de polynome
+# et aussi en terme de données d'entrée.
+# On préférerait un code plus puissant dans le cas où l'on trouve souvent 2+ erreurs ou que la perte de données est innacceptable.
+
+
+
+
+#################################################
+# Partie 9 - Choix ingénieur
+#################################################
+
+# La liaison satélitaire peut être sensible à énormément de bruit, le signal de celui-ci sera aussi bien faible
+# en puissance une fois arrivé au récepteur
+# Un choix de FEC semble intéressant ici pour économiser de la puissance et limiter des 
+# retransmissions à longue distance inutiles
+# Le choix de schéma FEC dépend du type d'application et de la redondance nécessaire
+# Si la modulation est adapée hamming pourrait peut-être sufire? Sinon on choisira un autre code plus puissant
+
+# La liaison CAN utilise un CRC en pratique.
+# Ce polynome est concû pour être robuste contre le bruit typique présent dans les voitures.
+# Le raisonement derrière semble être une priorisation de sécurité avant la vitesse.
+# On préfère alouer tous les bits vers une détection plûtot qu'une correction
+# On pourrait pas du tout imaginer hamming par exemple dans utiliser un code hamming.
+# Celui-ci n'est pas du tout suffissament robuste
+
+# Pour le stockage SSD, BCH semble être souvent utilisé. C'est une forme de FEC.
+# FEC devrait être priorisé puisque l'on peut pas du tout ce permettre de perdre des données dans ce cas.
+# Rien ne sert de savoir qu'une erreur est produite si on ne peut pas la corriger
+
+# Hamming pourrait peut-être suffire en satélitaire (à voire).
+
+# Le problème est que Hamming ne prend pas en compte le fait que l'on pourrait avoir plusieurs erreurs dans une même transmission. On trouve beacoup celà dans les SSD, où dans le bus CAN
+
+# Hamming semble être le standard pour de la ram ECC. Celle-ci est souvent affectée par des rayons cosmiques (donc erreure isolée)
